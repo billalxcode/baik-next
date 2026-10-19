@@ -20,6 +20,7 @@ Pakai skill ini untuk semua tugas di repo baik-next dan baik-lang-9: tulis kode,
 5. TIDAK ADA kalimat berulang. Jangan tulis ulang maksud yang sama dengan kata lain.
 6. Hindari AI slop: tanpa pembuka basa-basi, tanpa pujian kosong, tanpa superlatif kosong, tanpa emoji kecuali user minta, tanpa klaim tanpa bukti.
 7. Kode WAJIB English. Semua identifier, komentar, pesan error, dan docs di dalam kode memakai English. TIDAK ADA Bahasa Indonesia di dalam kode. Keyword bahasa BAIK (`TULIS`, `KALAU`, `SELAGI`) tetap Indonesia karena itu sintaks bahasa, bukan kode Rust.
+8. Untuk melakukan perubahan, DILARANG KERAS MENGGUNAKAN hal apapun di luar tool builtin. SELALU gunakan tool builtin: read, edit, write, glob, grep, shell.
 
 ## Definisi AI slop yang dilarang
 
@@ -65,4 +66,5 @@ Saat sebut fungsi atau kode, tulis `path:baris`. Contoh: `interpreter.c:1531`, `
 - [ ] Semua karakter ASCII keyboard.
 - [ ] Tidak ada kalimat berulang.
 - [ ] Kode English tanpa Indonesia.
+- [ ] Perubahan hanya via tool builtin.
 - [ ] Setiap klaim ada sumber file atau hasil eksekusi.
