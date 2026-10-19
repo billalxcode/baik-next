@@ -79,4 +79,39 @@ mod tests {
         assert_eq!(is_empty(&json!("")), Ok(json!(true)));
         assert_eq!(is_empty(&json!("x")), Ok(json!(false)));
     }
+    #[test]
+    fn len_counts_array() {
+        assert_eq!(len(&json!([1, 2, 3])), Ok(json!(3)));
+    }
+    #[test]
+    fn len_rejects_number() {
+        assert_eq!(
+            len(&json!(5)),
+            Err("len requires string or array".to_string())
+        );
+    }
+    #[test]
+    fn min_rejects_empty_and_non_number() {
+        assert_eq!(
+            min(&[]),
+            Err("min requires one argument".to_string())
+        );
+        assert!(min(&[json!("x")]).is_err());
+    }
+    #[test]
+    fn max_rejects_empty_and_non_number() {
+        assert_eq!(
+            max(&[]),
+            Err("max requires one argument".to_string())
+        );
+        assert!(max(&[json!(null)]).is_err());
+    }
+    #[test]
+    fn empty_covers_null_array_number_object() {
+        assert_eq!(is_empty(&json!(null)), Ok(json!(true)));
+        assert_eq!(is_empty(&json!([])), Ok(json!(true)));
+        assert_eq!(is_empty(&json!([1])), Ok(json!(false)));
+        assert_eq!(is_empty(&json!(0)), Ok(json!(false)));
+        assert_eq!(is_empty(&json!({"a": 1})), Ok(json!(false)));
+    }
 }

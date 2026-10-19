@@ -24,4 +24,9 @@ mod tests {
     fn accepts_tulis_line() {
         assert!(check_syntax("tulis \"halo\"").is_ok());
     }
+    #[test]
+    fn rejects_broken_input() {
+        assert!(check_syntax("tulis \"unclosed").is_err());
+        assert!(check_syntax("### unclosed comment").is_err());
+    }
 }

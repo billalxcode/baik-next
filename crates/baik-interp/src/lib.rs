@@ -6,6 +6,23 @@
 use baik_value::{lookup, Context, ValueAlias};
 use serde_json::json;
 
+/// Length of one quote character.
+const QUOTE_LEN: usize = 1;
+/// Keyword for print statement.
+const TULIS_KEYWORD: &str = "tulis";
+
+/// Strip TULIS keyword case-insensitively and return trimmed args.
+/// Returns None when text does not start with the keyword.
+fn strip_tulis_args(text: &str) -> Option<&str> {
+    let head = text.get(..TULIS_KEYWORD.len())?;
+    if head.eq_ignore_ascii_case(TULIS_KEYWORD) {
+        text.get(TULIS_KEYWORD.len()..)
+            .map(|rest| rest.trim().trim_matches(';'))
+    } else {
+        None
+    }
+}
+
 /// Stage 1 statement set.
 #[derive(Debug, Clone, PartialEq)]
 pub enum Statement {
@@ -32,10 +49,13 @@ pub fn run_simple(source: &str, stack: &mut Vec<Context>) -> Result<usize, Strin
             count += 1;
             break;
         }
-        if lower.starts_with("tulis") {
-            let args = text[5..].trim().trim_matches(';').to_string();
-            let ctx = stack.last().cloned().unwrap_or_default();
-            let rendered = render_write(&args, &ctx);
+        if let Some(args) = strip_tulis_args(text) {
+            let empty = Context::new();
+            let ctx: &Context = match stack.last() {
+                Some(item) => item,
+                None => &empty,
+            };
+            let rendered = render_write(args, ctx);
             println!("{}", rendered);
             count += 1;
             continue;
@@ -70,14 +90,19 @@ fn render_write(args: &str, ctx: &Context) -> String {
 
 fn render_arg(arg: &str, ctx: &Context) -> String {
     let item = arg.trim();
-    if item.len() >= 2 && item.starts_with('"') && item.ends_with('"') {
-        return item[1..item.len() - 1].replace("\\n", "\n");
+    if item.len() >= QUOTE_LEN * 2 {
+        if let Some(inner) = item
+            .strip_prefix('"')
+            .and_then(|s| s.strip_suffix('"'))
+        {
+            return inner.replace("\\n", "\n");
+        }
     }
     if let Some(v) = ctx.get(item) {
         return display(v);
     }
-    let single = vec![ctx.clone()];
-    if let Some(v) = lookup(&single, item) {
+    let single: &[Context] = std::slice::from_ref(ctx);
+    if let Some(v) = lookup(single, item) {
         return display(&v);
     }
     item.to_string()
@@ -107,5 +132,37 @@ mod tests {
         let mut stack = vec![Context::new()];
         let src = "# comment\ntamat";
         assert_eq!(run_simple(src, &mut stack), Ok(1));
+    }
+    #[test]
+    fn strip_tulis_handles_case_and_empty() {
+        assert_eq!(strip_tulis_args("TULIS \"hi\";"), Some("\"hi\""));
+        assert_eq!(strip_tulis_args("tulis"), Some(""));
+        assert_eq!(strip_tulis_args("tul"), None);
+        assert_eq!(strip_tulis_args(""), None);
+    }
+    #[test]
+    fn render_write_joins_quoted_and_variable() {
+        let mut ctx = Context::new();
+        ctx.insert("nama".to_string(), json!("budi"));
+        assert_eq!(render_write("\"halo\", nama", &ctx), "halobudi");
+        assert_eq!(render_write("\"a, b\"", &ctx), "a, b");
+    }
+    #[test]
+    fn render_arg_boundary_cases() {
+        let ctx = Context::new();
+        assert_eq!(render_arg("\"\"", &ctx), "");
+        assert_eq!(render_arg("\"", &ctx), "\"");
+        assert_eq!(render_arg("", &ctx), "");
+        assert_eq!(render_arg("\"hi", &ctx), "\"hi");
+        assert_eq!(render_arg("\"a\\nb\"", &ctx), "a\nb");
+    }
+    #[test]
+    fn display_covers_variants() {
+        assert_eq!(display(&json!("s")), "s");
+        assert_eq!(display(&json!(7)), "7");
+        assert_eq!(display(&json!(true)), "true");
+        assert_eq!(display(&json!(null)), "");
+        assert_eq!(display(&json!([1, 2])), "[1,2]");
+        assert_eq!(display(&json!({"a": 1})), "{\"a\":1}");
     }
 }

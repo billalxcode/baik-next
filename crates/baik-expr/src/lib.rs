@@ -22,7 +22,10 @@ pub fn eval_simple(op: &str, a: &ValueAlias, b: &ValueAlias) -> ExprResult {
 }
 
 fn as_number(v: &ValueAlias) -> Option<f64> {
-    v.as_i64().map(|x| x as f64).or_else(|| v.as_f64())
+    v.as_u64()
+        .map(|x| x as f64)
+        .or_else(|| v.as_i64().map(|x| x as f64))
+        .or_else(|| v.as_f64())
 }
 
 fn add(a: &ValueAlias, b: &ValueAlias) -> ExprResult {
@@ -80,5 +83,28 @@ mod tests {
     #[test]
     fn unknown_operator_fails() {
         assert!(eval_simple("%", &json!(1), &json!(2)).is_err());
+    }
+    #[test]
+    fn sub_numbers_succeeds() {
+        assert_eq!(eval_simple("-", &json!(5), &json!(3)), Ok(json!(2.0)));
+    }
+    #[test]
+    fn mul_numbers_succeeds() {
+        assert_eq!(eval_simple("*", &json!(4), &json!(2.5)), Ok(json!(10.0)));
+    }
+    #[test]
+    fn div_numbers_succeeds() {
+        assert_eq!(eval_simple("/", &json!(7), &json!(2)), Ok(json!(3.5)));
+    }
+    #[test]
+    fn div_negative_zero_fails() {
+        assert!(eval_simple("/", &json!(1), &json!(-0.0)).is_err());
+    }
+    #[test]
+    fn large_u64_converts_to_number() {
+        let big = json!(4294967296u64);
+        let result = eval_simple("+", &big, &json!(0));
+        let number = result.ok().and_then(|v| v.as_f64());
+        assert_eq!(number, Some(4294967296.0));
     }
 }
