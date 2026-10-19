@@ -1,0 +1,14 @@
+[package]
+name = "baik-expr"
+version = "10.0.0"
+edition = "2021"
+description = "BAIK expression evaluator. Port of baik_expression.c and tree."
+authors = ["anak10thn <anak10thn@gmail.com>"]
+license = "MIT"
+
+[dependencies]
+baik-value = { path = "../baik-value" }
+baik-syntax = { path = "../baik-syntax" }
+serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+pest = "2.1.1"

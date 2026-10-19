@@ -10,11 +10,11 @@ struct BaikLexer;
 fn pair(expr : Pairs<Rule>){
     for inner_pair in expr {
         match inner_pair.as_rule() {
-            function => {
+            Rule::function => {
                 println!("Digit:   {}", inner_pair.as_str());
                 pair(inner_pair.into_inner());
             },
-            EOI => {
+            Rule::EOI => {
                 println!("EOI:   {}", inner_pair.as_str());
                 pair(inner_pair.into_inner());
             },

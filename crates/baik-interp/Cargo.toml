@@ -1,0 +1,14 @@
+[package]
+name = "baik-interp"
+version = "10.0.0"
+edition = "2021"
+description = "BAIK statement interpreter for .ina files. Replaces interpreter.c and key headers."
+authors = ["anak10thn <anak10thn@gmail.com>"]
+license = "MIT"
+
+[dependencies]
+baik-value = { path = "../baik-value" }
+baik-syntax = { path = "../baik-syntax" }
+baik-expr = { path = "../baik-expr" }
+baik-std = { path = "../baik-std" }
+serde_json = "1.0"
